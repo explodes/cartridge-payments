@@ -14,15 +14,3 @@
 		{% fields_for form.card_fields %}
 	</fieldset>
 {% endif %}
-
-{% multipayment_forms request form as multipayment_forms %}
-{% if multipayment_forms %}
-	<ul id="secondary-payment">
-		{% for name,form in multipayment_forms %}<li id="{{ name|slugify }}">
-			<form method="post" action="{{ form.action }}">
-				{{ form.as_p }}
-				<input type="submit" value="{% trans name %}" class="btn btn-large">
-			</form>
-		</li>{% endfor %}
-	</ul>
-{% endif %}
