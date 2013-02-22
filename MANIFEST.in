@@ -1,2 +1,3 @@
 recursive-include payments *.py
+recursive-include payments *.html
 include README.md

@@ -1,0 +1,12 @@
+{% extends "shop/checkout.html" %}
+
+{% load i18n %}
+
+{% block fields %}
+	{% if request.cart.has_items %}
+		{% include "shop/includes/payment_fields.html" %}
+		{% if PRIMARY_PAYMENT_PROCESSOR_IN_USE %}
+			{{ form.other_fields.as_ul }}
+		{% endif %}
+	{% endif %}
+{% endblock %}
