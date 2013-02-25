@@ -1,15 +1,13 @@
 from decimal import Decimal
 
-from cartridge.shop import models as shop
 from django import forms
-from django.contrib.sites import models as sites
-from django.core.urlresolvers import reverse
 from mezzanine.conf import settings
 
-from payments.multipayments.forms import const
+from payments.multipayments.forms import base
+from payments.multipayments import const
 
 
-class PaypalSubmissionForm(forms.Form):
+class PaypalSubmissionForm(base.ExternalPaymentForm):
 
     invoice = forms.IntegerField(widget=forms.HiddenInput())
     first_name = forms.CharField(required=False, widget=forms.HiddenInput())
@@ -31,25 +29,29 @@ class PaypalSubmissionForm(forms.Form):
         super(PaypalSubmissionForm, self).__init__(*args, **kwargs)
 
         cart = request.cart
+        self.order = self.get_or_create_order(request, order_form)
 
-        uuid = request.session['order']['callback_uuid']
-
-        form_value = lambda name, default: request.POST.get('shipping_detail_%s' % name, default)
-
-        self.create_order(request, uuid, order_form)
+        form_value = lambda name, default: request.POST.get(\
+                        'shipping_detail_%s' % name, default)
 
         shipping_type = request.session.get("shipping_type")
         shipping_total = request.session.get("shipping_total")
 
+        tax_type = request.session.get("tax_type")
+        tax_total = request.session.get("tax_total")
+
         cart_price = cart.total_price()
-        shipping_price = Decimal(str(shipping_total)).quantize(const.NEAREST_CENT)
-        total_price = cart_price + (shipping_price if shipping_price else Decimal('0'))
+        ship_price = Decimal(str(shipping_total)).quantize(const.NEAREST_CENT)
+        tax_price = Decimal(str(tax_total)).quantize(const.NEAREST_CENT)
+        total_price = cart_price + \
+            (ship_price if ship_price else Decimal('0')) + \
+            (tax_price if tax_price else const.Decimal('0'))
 
         # a keyword, haha :)
         self.fields['return'] = forms.CharField(widget=forms.HiddenInput())
         #paypal = get_backend_settings('paypal')
         #customer = payment.get_customer_data()
-        self.fields['invoice'].initial = uuid
+        self.fields['invoice'].initial = self.order.callback_uuid
         self.fields['first_name'].initial = form_value('first_name', '')
         self.fields['last_name'].initial = form_value('last_name', '')
         self.fields['email'].initial = form_value('email', '')
@@ -63,54 +65,41 @@ class PaypalSubmissionForm(forms.Form):
         i = 1
         if cart.has_items():
             for item in cart.items.all():
-                self.add_line_item(i, item.description, item.total_price.quantize(const.NEAREST_CENT), int(item.quantity))
+                rounded = item.total_price.quantize(const.NEAREST_CENT)
+                qty = int(item.quantity)
+                self.add_line_item(i, item.description, rounded, qty)
                 i += 1
 
+        # Add shipping as a line item
         if shipping_type and shipping_total:
-            # Add shipping + tax as a line item
             self.add_line_item(i, shipping_type, shipping_total, 1)
+            i += 1
 
-        protocol = 'https' if settings.PAYPAL_RETURN_WITH_HTTPS else 'http'
-        domain = sites.Site.objects.get_current().domain
+        # Add tax as a line item
+        if tax_type and tax_total:
+            self.add_line_item(i, tax_type, tax_total, 1)
+            i += 1
 
-        base_url = '%s://%s' % (protocol, domain)
+        self.fields['return'].initial = self.lambda_reverse(\
+            settings.PAYPAL_RETURN_URL, cart, self.order.callback_uuid, \
+            order_form)
 
-        self.fields['return'].initial = base_url + self.lambda_reverse(settings.PAYPAL_RETURN_URL, cart, uuid, order_form)
-        self.fields['notify_url'].initial = base_url + self.lambda_reverse(settings.PAYPAL_IPN_URL, cart, uuid, order_form)
-
-    def lambda_reverse(self, func, cart, uuid, order_form):
-
-        view, args, kwargs = func(cart, uuid, order_form)
-        return reverse(view, args=args, kwargs=kwargs)
-
+        self.fields['notify_url'].initial = self.lambda_reverse(\
+            settings.PAYPAL_IPN_URL, cart, self.order.callback_uuid, order_form)
 
     def add_line_item(self, number, name, amount, quantity):
         # FIELDS
-        self.fields['item_name_%d' % number] = forms.CharField(widget=forms.HiddenInput())
-        self.fields['amount_%d' % number] = forms.DecimalField(widget=forms.HiddenInput())
-        self.fields['quantity_%d' % number] = forms.IntegerField(widget=forms.HiddenInput())
+        self.fields['item_name_%d' % number] = self._hidden_charfield()
+        self.fields['amount_%d' % number] = self._hidden_charfield()
+        self.fields['quantity_%d' % number] = self._hidden_charfield()
         # VALUES
         self.fields['item_name_%d' % number].initial = name
         self.fields['amount_%d' % number].initial = amount
         self.fields['quantity_%d' % number].initial = quantity
 
+    def _hidden_charfield(self):
+        return forms.CharField(widget=forms.HiddenInput())
+
     @property
     def action(self):
         return settings.PAYPAL_SUBMIT_URL
-
-    def clean(self, *args, **kwargs):
-        raise NotImplementedError("This form is not intended to be validated here.")
-
-    def create_order(self, request, uuid, order_form):
-        try:
-            order = shop.Order.objects.get(callback_uuid=uuid)
-        except shop.Order.DoesNotExist:
-            order = order_form.save(commit=False)
-            order.setup(request)
-            session_order = request.session['order']
-            for key in order_form.fields.keys():
-                if hasattr(order, key):
-                    setattr(order, key, session_order[key])
-            order.transaction_id = uuid
-            order.save()
-        return order
