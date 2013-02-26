@@ -25,3 +25,21 @@
 		{% endif %}
 	{% endif %}
 {% endblock %}
+
+
+{% block nav-buttons %}
+	{% if request.cart.has_items %}
+		<div class="form-actions clearfix">
+			<div class="form-actions-wrap">
+			{% if PRIMARY_PAYMENT_PROCESSOR_IN_USE %}
+				<input type="submit" class="btn btn-large btn-primary" value="{% trans "Next" %}">
+			{% endif %}
+			{% if not CHECKOUT_STEP_FIRST %}
+				<input type="submit" class="btn btn-large" name="back" value="{% trans "Back" %}">
+			{% endif %}
+			</div>
+		</div>
+	{% else %}
+		{{ block.super }}
+	{% endif %}
+{% endblock %}
