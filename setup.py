@@ -17,7 +17,7 @@ with open(rel('./README.md')) as readme:
 
 setup(
     name='cartridge-payments',
-    version='0.92.0',
+    version='0.97.0',
     description="Cartridge multiple payment options module.",
     long_description=long_description,
     author='Evan Leis',
