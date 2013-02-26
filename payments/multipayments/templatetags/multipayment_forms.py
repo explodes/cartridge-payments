@@ -3,8 +3,6 @@ from mezzanine import template
 from mezzanine.conf import settings
 
 
-print 'REGISTERING TAG'
-
 register = template.Library()
 
 @register.as_tag

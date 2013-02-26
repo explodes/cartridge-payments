@@ -39,15 +39,16 @@ class ExternalPaymentForm(forms.Form):
         '''
         Create an order from a uuid
         '''
-        uuid = request.session['order']['callback_uuid']
+        session_order = request.session.get('order', {})
+        uuid = session_order.get('callback_uuid')
+
         try:
             order = shop.Order.objects.get(callback_uuid=uuid)
         except shop.Order.DoesNotExist:
             order = order_form.save(commit=False)
             order.setup(request)
-            session_order = request.session['order']
             for key in order_form.fields.keys():
-                if hasattr(order, key):
+                if hasattr(order, key) and key in session_order:
                     setattr(order, key, session_order[key])
             order.transaction_id = uuid
             order.save()

@@ -2,6 +2,18 @@
 # PAYMENT OPTIONS #
 ###################
 
+INSTALLED_APPS = (
+    # ...
+    "payments.multipayments",
+    # ...
+)
+
+TEMPLATE_CONTEXT_PROCESSORS = (
+    # ...
+    "payments.multipayments.context_processors.settings",
+    # ...
+)
+
 # USE or EXTEND the custom callback-uuid form
 SHOP_CHECKOUT_FORM_CLASS = \
     'payments.multipayments.forms.base.CallbackUUIDOrderForm'
@@ -60,6 +72,7 @@ PAYPAL_RETURN_WITH_HTTPS = False
 PAYPAL_RETURN_URL = \
     lambda cart, uuid, order_form: ('shop_complete', None, None)
 # Function that returns args for reverse. Generated URL is URL for PayPal IPN.
+# Set to None if you do not wish to use IPN
 PAYPAL_IPN_URL = \
     lambda cart, uuid, order_form: ('my_paypal_ipn', None, {'uuid' : uuid})
 # Dev url

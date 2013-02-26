@@ -3,26 +3,35 @@
 {% load i18n multipayment_forms %}
 
 
+<div class="form-actions clearfix">
+        <div class="form-actions-wrap">
+	    <input type="submit" value="Next" class="btn btn-large btn-primary">
+        
+        </div>
+    </div>
+
 {% block before-form %}
-	{% multipayment_forms request form as multipayment_forms %}
-	{% if multipayment_forms %}
-		<ul id="secondary-payment">
-			{% for name,form in multipayment_forms %}<li id="{{ name|slugify }}">
-				<form method="post" action="{{ form.action }}">
-					{{ form.as_p }}
-					<input type="submit" value="{% trans name %}" class="btn btn-large">
-				</form>
-			</li>{% endfor %}
-		</ul>
+	{% if request.cart.has_items %}
+		{% multipayment_forms request form as multipayment_forms %}
+		{% if multipayment_forms %}
+			<div class="form-actions clearfix">
+				<div class="form-actions-wrap">
+					{% for name,form in multipayment_forms %}<form method="post" action="{{ form.action }}">
+						{{ form.as_p }}
+						<input type="submit" value="{% trans name %}" class="btn btn-large">
+					</form>{% endfor %}
+				</div>
+			</div>
+		{% endif %}
 	{% endif %}
 {% endblock %}
 
 {% block fields %}
 	{% if request.cart.has_items %}
 		{% include "shop/includes/payment_fields.html" %}
-		{% if PRIMARY_PAYMENT_PROCESSOR_IN_USE %}
-			{{ form.other_fields.as_ul }}
-		{% endif %}
+		{% if not PRIMARY_PAYMENT_PROCESSOR_IN_USE %}<div style="display:none">{% endif %}
+		{{ form.other_fields.as_ul }}
+		{% if not PRIMARY_PAYMENT_PROCESSOR_IN_USE %}</div>{% endif %}
 	{% endif %}
 {% endblock %}
 
