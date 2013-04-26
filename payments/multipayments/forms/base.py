@@ -18,7 +18,15 @@ class CallbackUUIDOrderForm(shopforms.OrderForm):
         # Set the callback_uuid to something new
         initial = kwargs.get('initial', {})
         is_first_step = step == checkout.CHECKOUT_STEP_FIRST
-        if is_first_step or 'callback_uuid' not in initial:
+        if is_first_step and 'callback_uuid' not in initial:
+            while True:
+                callback_uuid = uuid4()
+                count = shop.Order.objects.filter(callback_uuid=callback_uuid) \
+                    .count()
+                if not count:
+                    break
+            initial['callback_uuid'] = callback_uuid
+        elif 'callback_uuid' not in initial:
             while True:
                 callback_uuid = uuid4()
                 count = shop.Order.objects.filter(callback_uuid=callback_uuid) \
