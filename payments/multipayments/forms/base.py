@@ -29,9 +29,9 @@ class CallbackUUIDOrderForm(shopforms.OrderForm):
         elif 'callback_uuid' not in initial:
             while True:
                 callback_uuid = uuid4()
-                count = shop.Order.objects.filter(callback_uuid=callback_uuid) \
-                    .count()
-                if not count:
+                exists = shop.Order.objects.filter(callback_uuid=callback_uuid) \
+                    .exists()
+                if not exists:
                     break
             initial['callback_uuid'] = callback_uuid
         super(CallbackUUIDOrderForm, self).__init__(request, step, *args,
