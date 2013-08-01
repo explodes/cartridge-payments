@@ -2,3 +2,15 @@
 *.pot
 *.pyc
 local_settings.py
+
+cartridge_payments.egg-info/SOURCES.txt
+
+cartridge_payments.egg-info/PKG-INFO
+
+cartridge_payments.egg-info/dependency_links.txt
+
+cartridge_payments.egg-info/entry_points.txt
+
+cartridge_payments.egg-info/not-zip-safe
+
+cartridge_payments.egg-info/top_level.txt
