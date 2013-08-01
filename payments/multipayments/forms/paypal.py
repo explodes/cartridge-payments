@@ -65,7 +65,7 @@ class PaypalSubmissionForm(base.ExternalPaymentForm):
         i = 1
         if cart.has_items():
             for item in cart.items.all():
-                rounded = item.total_price.quantize(const.NEAREST_CENT)
+                rounded = item.unit_price.quantize(const.NEAREST_CENT)
                 qty = int(item.quantity)
                 self.add_line_item(i, item.description, rounded, qty)
                 i += 1

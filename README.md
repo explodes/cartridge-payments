@@ -1,6 +1,9 @@
 cartridge-payments
 ==================
 
+**NOTE:** *Requires cartridge 0.8.2 or higher*
+*The shop/checkout.html template has 3 blocks that are required. nav-buttons, before-form, and after-form.*
+
 Cartridge multiple payment options module.
 
 Features
