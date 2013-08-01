@@ -1,7 +1,7 @@
 cartridge-payments
 ==================
 
-**NOTE:** *An unreleased version of cartridge is required for this package to work: Commit b6e67ed46e2bc501f0358e9bb2418d47d2372d8a and greater is required.*
+**NOTE:** *Requires cartridge 0.8.2 or higher*
 *The shop/checkout.html template has 3 blocks that are required. nav-buttons, before-form, and after-form.*
 
 Cartridge multiple payment options module.
