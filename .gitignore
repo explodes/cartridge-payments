@@ -14,3 +14,5 @@ cartridge_payments.egg-info/entry_points.txt
 cartridge_payments.egg-info/not-zip-safe
 
 cartridge_payments.egg-info/top_level.txt
+
+dist/cartridge-payments-0.97.0.tar.gz
