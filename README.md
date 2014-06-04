@@ -45,7 +45,7 @@ Add the following minimum settings to your settings file:
 	        "cartridge.shop.models.Order.callback_uuid",
 	        "django.db.models.CharField",
 	        (),
-	        {"blank" : False, "max_length" : 36},
+	        {"blank" : False, "max_length" : 36, 'default': 0},
 	    ),
         # ...
 	)
@@ -67,7 +67,13 @@ Add the following minimum settings to your settings file:
 	        'form' : 'dot.separarted.form.Class2'
 	    })
 	)
-	
+
+Migrate Existing Database
+-------------------------
+
+	python manage.py schemamigration cartridge.shop --auto
+	python manage.py migrate shop
+
 PayPal Configuration
 -------------------------
 
